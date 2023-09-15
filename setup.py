@@ -11,6 +11,7 @@ setup(
     install_requires=
     [
         "mmsegmentation @ git+https://github.com/open-mmlab/mmsegmentation.git@186572a3ce64ac9b6b37e66d58c76515000c3280",
+        "mmpretrain @ git+https://github.com/open-mmlab/mmpretrain.git",
         "rasterio",
         "tifffile",
         "einops",
