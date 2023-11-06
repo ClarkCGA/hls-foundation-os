@@ -1,15 +1,16 @@
 """
 This file holds pipeline components useful for loading remote sensing images and annotations.
 """
-import numpy as np
 import os.path as osp
+import numpy as np
 import torch
 import torchvision.transforms.functional as F
-
-from tifffile import imread
-from mmcv.parallel import DataContainer as DC
-from mmseg.datasets.builder import PIPELINES
 from torchvision import transforms
+from tifffile import imread
+#from mmcv.parallel import DataContainer as DC
+#from mmseg.datasets.builder import PIPELINES
+from mmcv.transforms import BaseTransform
+from mmpretrain.registry import TRANSFORMS
 
 
 def open_tiff(fname):
@@ -17,7 +18,8 @@ def open_tiff(fname):
     return data
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class ConstantMultiply(object):
     """Multiply image by constant.
 
@@ -45,7 +47,8 @@ class ConstantMultiply(object):
         return results
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class BandsExtract(object):
 
     """Extract bands from image. Assumes channels last
@@ -75,7 +78,8 @@ class BandsExtract(object):
         return results
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class TorchRandomCrop(object):
 
     """
@@ -97,7 +101,8 @@ class TorchRandomCrop(object):
         return results
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class TorchNormalize(object):
     """Normalize the image.
 
@@ -127,7 +132,8 @@ class TorchNormalize(object):
         return results
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Reshape(object):
     """
     It reshapes a tensor.
@@ -157,7 +163,8 @@ class Reshape(object):
         return results
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class CastTensor(object):
     """
 
@@ -179,7 +186,8 @@ class CastTensor(object):
         return results
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class CollectTestList(object):
     """
 
@@ -227,7 +235,8 @@ class CollectTestList(object):
         )
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class TorchPermute(object):
     """Permute dimensions.
 
@@ -252,7 +261,8 @@ class TorchPermute(object):
         return self.__class__.__name__ + f"(keys={self.keys}, order={self.order})"
 
 
-@PIPELINES.register_module()
+#@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class LoadGeospatialImageFromFile(object):
     """
 
@@ -315,57 +325,57 @@ class LoadGeospatialImageFromFile(object):
         return repr_str
 
 
-@PIPELINES.register_module()
-class LoadGeospatialAnnotations(object):
-    """Load annotations for semantic segmentation.
+# @PIPELINES.register_module()
+# class LoadGeospatialAnnotations(object):
+#     """Load annotations for semantic segmentation.
 
-    Args:
-        to_uint8 (bool): Whether to convert the loaded label to a uint8
-        reduce_zero_label (bool): Whether reduce all label value by 1.
-            Usually used for datasets where 0 is background label.
-            Default: False.
-        nodata (float/int): no data value to substitute to nodata_replace
-        nodata_replace (float/int): value to use to replace no data
+#     Args:
+#         to_uint8 (bool): Whether to convert the loaded label to a uint8
+#         reduce_zero_label (bool): Whether reduce all label value by 1.
+#             Usually used for datasets where 0 is background label.
+#             Default: False.
+#         nodata (float/int): no data value to substitute to nodata_replace
+#         nodata_replace (float/int): value to use to replace no data
 
 
-    """
+#     """
 
-    def __init__(
-        self,
-        reduce_zero_label=False,
-        nodata=None,
-        nodata_replace=-1,
-    ):
-        self.reduce_zero_label = reduce_zero_label
-        self.nodata = nodata
-        self.nodata_replace = nodata_replace
+#     def __init__(
+#         self,
+#         reduce_zero_label=False,
+#         nodata=None,
+#         nodata_replace=-1,
+#     ):
+#         self.reduce_zero_label = reduce_zero_label
+#         self.nodata = nodata
+#         self.nodata_replace = nodata_replace
 
-    def __call__(self, results):
-        if results.get("seg_prefix", None) is not None:
-            filename = osp.join(results["seg_prefix"], results["ann_info"]["seg_map"])
-        else:
-            filename = results["ann_info"]["seg_map"]
+#     def __call__(self, results):
+#         if results.get("seg_prefix", None) is not None:
+#             filename = osp.join(results["seg_prefix"], results["ann_info"]["seg_map"])
+#         else:
+#             filename = results["ann_info"]["seg_map"]
 
-        gt_semantic_seg = open_tiff(filename)
+#         gt_semantic_seg = open_tiff(filename)
 
-        if self.nodata is not None:
-            gt_semantic_seg = np.where(
-                gt_semantic_seg == self.nodata, self.nodata_replace, gt_semantic_seg
-            )
-        # reduce zero_label
-        if self.reduce_zero_label:
-            # avoid using underflow conversion
-            gt_semantic_seg[gt_semantic_seg == 0] = 255
-            gt_semantic_seg = gt_semantic_seg - 1
-            gt_semantic_seg[gt_semantic_seg == 254] = 255
-        if results.get("label_map", None) is not None:
-            # Add deep copy to solve bug of repeatedly
-            # replace `gt_semantic_seg`, which is reported in
-            # https://github.com/open-mmlab/mmsegmentation/pull/1445/
-            gt_semantic_seg_copy = gt_semantic_seg.copy()
-            for old_id, new_id in results["label_map"].items():
-                gt_semantic_seg[gt_semantic_seg_copy == old_id] = new_id
+#         if self.nodata is not None:
+#             gt_semantic_seg = np.where(
+#                 gt_semantic_seg == self.nodata, self.nodata_replace, gt_semantic_seg
+#             )
+#         # reduce zero_label
+#         if self.reduce_zero_label:
+#             # avoid using underflow conversion
+#             gt_semantic_seg[gt_semantic_seg == 0] = 255
+#             gt_semantic_seg = gt_semantic_seg - 1
+#             gt_semantic_seg[gt_semantic_seg == 254] = 255
+#         if results.get("label_map", None) is not None:
+#             # Add deep copy to solve bug of repeatedly
+#             # replace `gt_semantic_seg`, which is reported in
+#             # https://github.com/open-mmlab/mmsegmentation/pull/1445/
+#             gt_semantic_seg_copy = gt_semantic_seg.copy()
+#             for old_id, new_id in results["label_map"].items():
+#                 gt_semantic_seg[gt_semantic_seg_copy == old_id] = new_id
 
-        results["gt_semantic_seg"] = gt_semantic_seg
-        results["seg_fields"].append("gt_semantic_seg")
-        return results
+#         results["gt_semantic_seg"] = gt_semantic_seg
+#         results["seg_fields"].append("gt_semantic_seg")
+#         return results

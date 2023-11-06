@@ -1,0 +1,608 @@
+2023/11/05 20:11:35 - mmengine - INFO - 
+------------------------------------------------------------
+System environment:
+    sys.platform: linux
+    Python: 3.9.0 (default, Nov 15 2020, 14:28:56) [GCC 7.3.0]
+    CUDA available: True
+    numpy_random_seed: 235917715
+    GPU 0: Quadro P5200
+    CUDA_HOME: None
+    GCC: n/a
+    PyTorch: 1.11.0+cu115
+    PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.5.2 (Git Hash a9302535553c73243c632ad3c4c80beec3d19a1e)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.5
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.3.2
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.5, CUDNN_VERSION=8.3.2, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.11.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+    TorchVision: 0.12.0+cu115
+    OpenCV: 4.8.1
+    MMEngine: 0.9.1
+
+Runtime environment:
+    dist_cfg: {'backend': 'nccl'}
+    seed: 235917715
+    Distributed launcher: pytorch
+    Distributed training: True
+    GPU number: 1
+------------------------------------------------------------
+
+2023/11/05 20:11:36 - mmengine - INFO - Config:
+CLASSES = (
+    'Built Area',
+    'Grass',
+    'Flooded Vegetation',
+    'Crops',
+    'Shrub & Scrub',
+    'Trees',
+    'Water',
+    'Bare Ground',
+)
+auto_resume = False
+bands = [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+]
+checkpoint_config = dict(
+    by_epoch=True, interval=100, out_dir='task2_gfm/results')
+cudnn_benchmark = True
+custom_imports = dict(imports=[
+    'geospatial_fm',
+])
+data = dict(
+    samples_per_gpu=4,
+    test=dict(
+        CLASSES=(
+            'Built Area',
+            'Grass',
+            'Flooded Vegetation',
+            'Crops',
+            'Shrub & Scrub',
+            'Trees',
+            'Water',
+            'Bare Ground',
+        ),
+        ann_dir='validation_chips',
+        data_root=
+        '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data',
+        img_dir='validation_chips',
+        pipeline=[
+            dict(
+                channels_last=True,
+                to_float32=True,
+                type='LoadGeospatialImageFromFile'),
+            dict(keys=[
+                'img',
+            ], type='ToTensor'),
+            dict(keys=[
+                'img',
+            ], order=(
+                2,
+                0,
+                1,
+            ), type='TorchPermute'),
+            dict(
+                means=[
+                    494.905781,
+                    815.239594,
+                    924.335066,
+                    2968.881459,
+                    2634.621962,
+                    1739.579917,
+                ],
+                stds=[
+                    284.925432,
+                    357.84876,
+                    575.566823,
+                    896.601013,
+                    951.900334,
+                    921.407808,
+                ],
+                type='TorchNormalize'),
+            dict(
+                keys=[
+                    'img',
+                ],
+                look_up=dict({
+                    '2': 1,
+                    '3': 2
+                }),
+                new_shape=(
+                    6,
+                    1,
+                    -1,
+                    -1,
+                ),
+                type='Reshape'),
+            dict(
+                keys=[
+                    'img',
+                ],
+                new_type='torch.FloatTensor',
+                type='CastTensor'),
+            dict(
+                keys=[
+                    'img',
+                ],
+                meta_keys=[
+                    'img_info',
+                    'seg_fields',
+                    'img_prefix',
+                    'seg_prefix',
+                    'filename',
+                    'ori_filename',
+                    'img',
+                    'img_shape',
+                    'ori_shape',
+                    'pad_shape',
+                    'scale_factor',
+                    'img_norm_cfg',
+                ],
+                type='CollectTestList'),
+        ],
+        reduce_zero_label=True,
+        split=
+        '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data_splits/multi_label_classification/val.txt',
+        type='MultiLabelGeospatialDataset'),
+    train=dict(
+        CLASSES=(
+            'Built Area',
+            'Grass',
+            'Flooded Vegetation',
+            'Crops',
+            'Shrub & Scrub',
+            'Trees',
+            'Water',
+            'Bare Ground',
+        ),
+        ann_dir='annotations',
+        data_root=
+        '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data',
+        img_dir='training_chips',
+        pipeline=[
+            dict(
+                channels_last=True,
+                to_float32=True,
+                type='LoadGeospatialImageFromFile'),
+            dict(direction='horizontal', prob=0.5, type='RandomFlip'),
+            dict(keys=[
+                'img',
+            ], type='ToTensor'),
+            dict(keys=[
+                'img',
+            ], order=(
+                2,
+                0,
+                1,
+            ), type='TorchPermute'),
+            dict(
+                means=[
+                    494.905781,
+                    815.239594,
+                    924.335066,
+                    2968.881459,
+                    2634.621962,
+                    1739.579917,
+                ],
+                stds=[
+                    284.925432,
+                    357.84876,
+                    575.566823,
+                    896.601013,
+                    951.900334,
+                    921.407808,
+                ],
+                type='TorchNormalize'),
+            dict(keys=[
+                'img',
+            ], new_shape=(
+                6,
+                1,
+                224,
+                224,
+            ), type='Reshape'),
+            dict(type='PackInputs'),
+        ],
+        split=
+        '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data_splits/multi_label_classification/train.txt',
+        type='MultiLabelGeospatialDataset'),
+    val=dict(
+        CLASSES=(
+            'Built Area',
+            'Grass',
+            'Flooded Vegetation',
+            'Crops',
+            'Shrub & Scrub',
+            'Trees',
+            'Water',
+            'Bare Ground',
+        ),
+        ann_dir='validation_chips',
+        data_root=
+        '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data',
+        img_dir='validation_chips',
+        pipeline=[
+            dict(
+                channels_last=True,
+                to_float32=True,
+                type='LoadGeospatialImageFromFile'),
+            dict(keys=[
+                'img',
+            ], type='ToTensor'),
+            dict(keys=[
+                'img',
+            ], order=(
+                2,
+                0,
+                1,
+            ), type='TorchPermute'),
+            dict(
+                means=[
+                    494.905781,
+                    815.239594,
+                    924.335066,
+                    2968.881459,
+                    2634.621962,
+                    1739.579917,
+                ],
+                stds=[
+                    284.925432,
+                    357.84876,
+                    575.566823,
+                    896.601013,
+                    951.900334,
+                    921.407808,
+                ],
+                type='TorchNormalize'),
+            dict(
+                keys=[
+                    'img',
+                ],
+                look_up=dict({
+                    '2': 1,
+                    '3': 2
+                }),
+                new_shape=(
+                    6,
+                    1,
+                    -1,
+                    -1,
+                ),
+                type='Reshape'),
+            dict(
+                keys=[
+                    'img',
+                ],
+                new_type='torch.FloatTensor',
+                type='CastTensor'),
+            dict(
+                keys=[
+                    'img',
+                ],
+                meta_keys=[
+                    'img_info',
+                    'seg_fields',
+                    'img_prefix',
+                    'seg_prefix',
+                    'filename',
+                    'ori_filename',
+                    'img',
+                    'img_shape',
+                    'ori_shape',
+                    'pad_shape',
+                    'scale_factor',
+                    'img_norm_cfg',
+                ],
+                type='CollectTestList'),
+        ],
+        split=
+        '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data_splits/multi_label_classification/val.txt',
+        type='MultiLabelGeospatialDataset'),
+    workers_per_gpu=2)
+data_root = '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data'
+dataset = 'MultiLabelGeospatialDataset'
+dataset_type = 'MultiLabelGeospatialDataset'
+dist_params = dict(backend='nccl')
+embed_dim = 768
+eval_epoch_interval = 5
+experiment = 'results'
+gpu_ids = range(0, 1)
+img_norm_cfg = dict(
+    means=[
+        494.905781,
+        815.239594,
+        924.335066,
+        2968.881459,
+        2634.621962,
+        1739.579917,
+    ],
+    stds=[
+        284.925432,
+        357.84876,
+        575.566823,
+        896.601013,
+        951.900334,
+        921.407808,
+    ])
+img_size = 224
+launcher = 'pytorch'
+load_from = None
+log_config = dict(
+    hooks=[
+        dict(type='TextLoggerHook'),
+        dict(type='TensorboardLoggerHook'),
+    ],
+    interval=10)
+log_level = 'INFO'
+loss_func = dict(
+    avg_non_ignore=True,
+    class_weight=[
+        0.05004486,
+        0.05469906,
+        0.48799205,
+        0.0532651,
+        0.19849055,
+        0.04613963,
+        0.05042878,
+        0.05893997,
+    ],
+    type='CrossEntropyLoss',
+    use_sigmoid=True)
+loss_weights_multi = [
+    0.05004486,
+    0.05469906,
+    0.48799205,
+    0.0532651,
+    0.19849055,
+    0.04613963,
+    0.05042878,
+    0.05893997,
+]
+lr_config = dict(
+    by_epoch=False,
+    min_lr=0.0,
+    policy='poly',
+    power=1.0,
+    warmup='linear',
+    warmup_iters=1500,
+    warmup_ratio=1e-06)
+max_epochs = 80
+model = dict(
+    auxiliary_head=dict(
+        align_corners=False,
+        channels=256,
+        concat_input=False,
+        dropout_ratio=0.1,
+        in_channels=768,
+        in_index=-1,
+        loss_decode=dict(
+            avg_non_ignore=True,
+            class_weight=[
+                0.05004486,
+                0.05469906,
+                0.48799205,
+                0.0532651,
+                0.19849055,
+                0.04613963,
+                0.05042878,
+                0.05893997,
+            ],
+            type='CrossEntropyLoss',
+            use_sigmoid=True),
+        norm_cfg=dict(requires_grad=True, type='BN'),
+        num_classes=8,
+        num_convs=2,
+        type='FCNHead'),
+    backbone=dict(
+        depth=6,
+        embed_dim=768,
+        img_size=224,
+        in_chans=6,
+        mlp_ratio=4.0,
+        norm_pix_loss=False,
+        num_frames=1,
+        num_heads=8,
+        patch_size=16,
+        pretrained=
+        '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data/Prithvi_100M.pt',
+        tubelet_size=1,
+        type='TemporalViTEncoder'),
+    decode_head=dict(
+        align_corners=False,
+        channels=256,
+        concat_input=False,
+        dropout_ratio=0.1,
+        in_channels=768,
+        in_index=-1,
+        loss_decode=dict(
+            avg_non_ignore=True,
+            class_weight=[
+                0.05004486,
+                0.05469906,
+                0.48799205,
+                0.0532651,
+                0.19849055,
+                0.04613963,
+                0.05042878,
+                0.05893997,
+            ],
+            type='CrossEntropyLoss',
+            use_sigmoid=True),
+        norm_cfg=dict(requires_grad=True, type='BN'),
+        num_classes=8,
+        num_convs=1,
+        type='FCNHead'),
+    frozen_backbone=False,
+    test_cfg=dict(crop_size=(
+        224,
+        224,
+    ), mode='slide', stride=(
+        112,
+        112,
+    )),
+    train_cfg=dict(),
+    type='TemporalMultiLabelClassifier')
+norm_cfg = dict(requires_grad=True, type='BN')
+num_frames = 1
+num_heads = 8
+num_layers = 6
+num_workers = 2
+optimizer = dict(
+    betas=(
+        0.9,
+        0.999,
+    ), lr=1.5e-05, type='Adam', weight_decay=0.05)
+optimizer_config = dict(grad_clip=None)
+output_embed_dim = 768
+patch_size = 16
+pretrained_weights_path = '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data/Prithvi_100M.pt'
+project_dir = 'task2_gfm'
+resume_from = None
+runner = dict(max_epochs=80, type='EpochBasedRunner')
+save_path = 'task2_gfm/results'
+splits = dict(
+    test=
+    '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data_splits/multi_label_classification/val.txt',
+    train=
+    '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data_splits/multi_label_classification/train.txt',
+    val=
+    '/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data_splits/multi_label_classification/val.txt'
+)
+test_pipeline = [
+    dict(
+        channels_last=True,
+        to_float32=True,
+        type='LoadGeospatialImageFromFile'),
+    dict(keys=[
+        'img',
+    ], type='ToTensor'),
+    dict(keys=[
+        'img',
+    ], order=(
+        2,
+        0,
+        1,
+    ), type='TorchPermute'),
+    dict(
+        means=[
+            494.905781,
+            815.239594,
+            924.335066,
+            2968.881459,
+            2634.621962,
+            1739.579917,
+        ],
+        stds=[
+            284.925432,
+            357.84876,
+            575.566823,
+            896.601013,
+            951.900334,
+            921.407808,
+        ],
+        type='TorchNormalize'),
+    dict(
+        keys=[
+            'img',
+        ],
+        look_up=dict({
+            '2': 1,
+            '3': 2
+        }),
+        new_shape=(
+            6,
+            1,
+            -1,
+            -1,
+        ),
+        type='Reshape'),
+    dict(keys=[
+        'img',
+    ], new_type='torch.FloatTensor', type='CastTensor'),
+    dict(
+        keys=[
+            'img',
+        ],
+        meta_keys=[
+            'img_info',
+            'seg_fields',
+            'img_prefix',
+            'seg_prefix',
+            'filename',
+            'ori_filename',
+            'img',
+            'img_shape',
+            'ori_shape',
+            'pad_shape',
+            'scale_factor',
+            'img_norm_cfg',
+        ],
+        type='CollectTestList'),
+]
+tile_size = 224
+train_pipeline = [
+    dict(
+        channels_last=True,
+        to_float32=True,
+        type='LoadGeospatialImageFromFile'),
+    dict(direction='horizontal', prob=0.5, type='RandomFlip'),
+    dict(keys=[
+        'img',
+    ], type='ToTensor'),
+    dict(keys=[
+        'img',
+    ], order=(
+        2,
+        0,
+        1,
+    ), type='TorchPermute'),
+    dict(
+        means=[
+            494.905781,
+            815.239594,
+            924.335066,
+            2968.881459,
+            2634.621962,
+            1739.579917,
+        ],
+        stds=[
+            284.925432,
+            357.84876,
+            575.566823,
+            896.601013,
+            951.900334,
+            921.407808,
+        ],
+        type='TorchNormalize'),
+    dict(keys=[
+        'img',
+    ], new_shape=(
+        6,
+        1,
+        224,
+        224,
+    ), type='Reshape'),
+    dict(type='PackInputs'),
+]
+tubelet_size = 1
+work_dir = 'task2_gfm/results'
+workflow = [
+    (
+        'train',
+        1,
+    ),
+]
+
