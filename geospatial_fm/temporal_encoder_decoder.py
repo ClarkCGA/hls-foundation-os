@@ -214,18 +214,157 @@
 #         seg_pred = list(seg_pred)
 #         return seg_pred
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+# import torch
+# import torch.nn as nn
+# import torch.nn.functional as F
+
+# from mmpretrain.registry import MODELS
+# from mmpretrain.models import builder
+# from mmengine.model import BaseModel
+
+
+# @MODELS.register_module()
+# class GeospatialMultiLabelClassifier(BaseModel):
+#     """Classifier based on TemporalViTEncoder for multi-label classification tasks."""
+
+#     def __init__(self,
+#                  backbone,
+#                  cls_head,
+#                  pretrained=None,
+#                  frozen_backbone=False):
+#         super(GeospatialMultiLabelClassifier, self).__init__()
+
+#         if pretrained is not None:
+#             backbone.pretrained = pretrained
+#         self.backbone = builder.build_backbone(backbone)
+        
+#         if frozen_backbone:
+#             for param in self.backbone.parameters():
+#                 param.requires_grad = False
+
+#         # Add the MultiLabelClsHead
+#         self.head = builder.build_head(cls_head)
+
+
+#     def forward(self, img, lbl=None, mode='loss'):
+
+#         features = self.backbone(img)
+#         cls_embeddings = features[0][:, 0, :]
+        
+#         if mode == 'loss':
+#             output = self.head(cls_embeddings, lbl)
+#             return {'loss': output}
+#         elif mode in ['predict', 'tensor']:
+#             output = self.cls_head(cls_embeddings)
+#             return output
+
+
 
 from mmpretrain.models.builder import BACKBONES, HEADS
 from mmpretrain.models.heads import MultiLabelClsHead
-#from mmpretrain.registry import MODELS
-from mmpretrain.models import builder
 from mmengine.registry import MODELS
+from mmpretrain.models import builder
+from mmengine.model import BaseModel
+
+from mmengine import Registry
+
+#HEADS = Registry('head', scope='mmengine', locations=['mmengine.models.heads'])
+#MODELS.register_module()(MultiLabelClsHead)
+
+
+# from mmpretrain.models.losses.cross_entropy_loss import  cross_entropy, soft_cross_entropy, binary_cross_entropy
+# from mmpretrain.models.losses.utils import weight_reduce_loss
+# import torch.nn as nn
+# import torch.nn.functional as F
+
+# from mmpretrain.models.losses.cross_entropy_loss import CrossEntropyLoss
+# LOSSES = Registry('loss', scope='mmengine', locations=['mmengine.models.losses'])
+# LOSSES.register_module()(CrossEntropyLoss)
+
+
+
+# @LOSSES.register_module()
+# class CrossEntropyLoss(nn.Module):
+#     """Cross entropy loss.
+
+#     Args:
+#         use_sigmoid (bool): Whether the prediction uses sigmoid
+#             of softmax. Defaults to False.
+#         use_soft (bool): Whether to use the soft version of CrossEntropyLoss.
+#             Defaults to False.
+#         reduction (str): The method used to reduce the loss.
+#             Options are "none", "mean" and "sum". Defaults to 'mean'.
+#         loss_weight (float):  Weight of the loss. Defaults to 1.0.
+#         class_weight (List[float], optional): The weight for each class with
+#             shape (C), C is the number of classes. Default None.
+#         pos_weight (List[float], optional): The positive weight for each
+#             class with shape (C), C is the number of classes. Only enabled in
+#             BCE loss when ``use_sigmoid`` is True. Default None.
+#     """
+
+#     def __init__(self,
+#                  use_sigmoid=False,
+#                  use_soft=False,
+#                  reduction='mean',
+#                  loss_weight=1.0,
+#                  class_weight=None,
+#                  pos_weight=None):
+#         super(CrossEntropyLoss, self).__init__()
+#         self.use_sigmoid = use_sigmoid
+#         self.use_soft = use_soft
+#         assert not (
+#             self.use_soft and self.use_sigmoid
+#         ), 'use_sigmoid and use_soft could not be set simultaneously'
+
+#         self.reduction = reduction
+#         self.loss_weight = loss_weight
+#         self.class_weight = class_weight
+#         self.pos_weight = pos_weight
+
+#         if self.use_sigmoid:
+#             self.cls_criterion = binary_cross_entropy
+#         elif self.use_soft:
+#             self.cls_criterion = soft_cross_entropy
+#         else:
+#             self.cls_criterion = cross_entropy
+
+#     def forward(self,
+#                 cls_score,
+#                 label,
+#                 weight=None,
+#                 avg_factor=None,
+#                 reduction_override=None,
+#                 **kwargs):
+#         assert reduction_override in (None, 'none', 'mean', 'sum')
+#         reduction = (
+#             reduction_override if reduction_override else self.reduction)
+
+#         if self.class_weight is not None:
+#             class_weight = cls_score.new_tensor(self.class_weight)
+#         else:
+#             class_weight = None
+
+#         # only BCE loss has pos_weight
+#         if self.pos_weight is not None and self.use_sigmoid:
+#             pos_weight = cls_score.new_tensor(self.pos_weight)
+#             kwargs.update({'pos_weight': pos_weight})
+#         else:
+#             pos_weight = None
+
+#         loss_cls = self.loss_weight * self.cls_criterion(
+#             cls_score,
+#             label,
+#             weight,
+#             class_weight=class_weight,
+#             reduction=reduction,
+#             avg_factor=avg_factor,
+#             **kwargs)
+#         return loss_cls
+
+
 
 @MODELS.register_module()
-class TemporalMultiLabelClassifier(nn.Module):
+class GeospatialMultiLabelClassifier(BaseModel):
     """Classifier based on TemporalViTEncoder for multi-label classification tasks."""
 
     def __init__(self,
@@ -233,7 +372,7 @@ class TemporalMultiLabelClassifier(nn.Module):
                  cls_head,
                  pretrained=None,
                  frozen_backbone=False):
-        super(TemporalMultiLabelClassifier, self).__init__()
+        super(GeospatialMultiLabelClassifier, self).__init__()
 
         if pretrained is not None:
             backbone.pretrained = pretrained
@@ -247,22 +386,14 @@ class TemporalMultiLabelClassifier(nn.Module):
         self.head = builder.build_head(cls_head)
 
 
-    def forward(self, x):
+    def forward(self, img, lbl=None, mode='loss'):
 
-        features = self.backbone(x)
-        
-        # Extract cls_token embeddings for classification
+        features = self.backbone(img)
         cls_embeddings = features[0][:, 0, :]
-
-        output = self.head(cls_embeddings)
         
-        return output
-
-    def simple_test(self, img):
-        """Simple test with single image."""
-        output = self.forward(img)
-        
-        # Convert to probabilities using sigmoid activation
-        probabilities = torch.sigmoid(output)
-
-        return probabilities.cpu().numpy()
+        if mode == 'loss':
+            output = self.head(cls_embeddings, lbl)
+            return {'loss': output}
+        elif mode in ['predict', 'tensor']:
+            output = self.cls_head(cls_embeddings)
+            return output

@@ -9,7 +9,7 @@ from torchvision import transforms
 from tifffile import imread
 #from mmcv.parallel import DataContainer as DC
 #from mmseg.datasets.builder import PIPELINES
-from mmcv.transforms import BaseTransform
+#from mmcv.transforms import BaseTransform
 from mmpretrain.registry import TRANSFORMS
 
 

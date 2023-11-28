@@ -1,18 +1,20 @@
 import os 
-#env_cfg = dict()
 dist_params = dict(backend='nccl')  # set distributed parameters
 log_level = 'INFO' # logger parameter
 load_from = None # load from which checkpoint
 resume_from = None # resume from which checkpoint
 cudnn_benchmark = True # whether to enable cudnn benchmark
-custom_imports = dict(imports=['geospatial_fm']) # import your own modules.
+custom_imports = dict(imports=['geospatial_fm',
+                               'mmpretrain.models.heads',
+                               'mmpretrain.models.losses'
+                               ]) # import your own modules.
 num_frames = 1 # changed to 1 
 img_size = 224
 num_workers = 2
 
 # model
 # TO BE DEFINED BY USER: model path
-pretrained_weights_path = "/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data/Prithvi_100M.pt"
+pretrained_weights_path = "/mnt/c/My_documents/summer_project/task2_gfm/hls-foundation-os/data/filtered_Prithvi_100M.pt"
 num_layers = 6
 patch_size = 16
 embed_dim = 768
@@ -28,7 +30,8 @@ loss_func = dict(
     type='CrossEntropyLoss',
     use_sigmoid=True, # changed to 'True'
     class_weight=loss_weights_multi,
-    avg_non_ignore=True)
+    #avg_non_ignore=True
+    )
 output_embed_dim = embed_dim*num_frames
 
 
@@ -67,6 +70,7 @@ tile_size = img_size
 #crop_size = (tile_size, tile_size)
 train_pipeline = [
     dict(type='LoadGeospatialImageFromFile', to_float32=True, channels_last=True),
+    dict(type='BandsExtract', bands=bands),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='ToTensor', keys=['img']),
     dict(type="TorchPermute", keys=["img"], order=(2, 0, 1)),
@@ -93,6 +97,7 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadGeospatialImageFromFile', to_float32=True, channels_last=True),
+    dict(type='BandsExtract', bands=bands),
     dict(type='ToTensor', keys=['img']),
      # to channels first
     dict(type="TorchPermute", keys=["img"], order=(2, 0, 1)),
@@ -185,7 +190,7 @@ workflow = [('train', 1)]
 norm_cfg = dict(type='BN', requires_grad=True)
 
 model = dict(
-    type='TemporalMultiLabelClassifier',
+    type='GeospatialMultiLabelClassifier',
     frozen_backbone=False,
     backbone=dict(
         type='TemporalViTEncoder',
@@ -202,9 +207,13 @@ model = dict(
         norm_pix_loss=False),
     cls_head=dict(
         type='MultiLabelClsHead',
-        num_classes=len(CLASSES),
-        in_features=output_embed_dim,
-        loss=loss_func))
+        loss=loss_func)
+    # cls_head=dict(
+    #     type='MultiLabelLinearClsHead',
+    #     num_classes=len(CLASSES),
+    #     in_channels=output_embed_dim,
+    #     loss=loss_func)
+    )
 
 # model = dict(
 #     type='TemporalEncoderDecoder',

@@ -17,6 +17,7 @@ from mmengine.runner import load_checkpoint
 #from mmseg.models.builder import BACKBONES, NECKS
 from mmpretrain.models.builder import BACKBONES
 from mmengine.registry import MODELS
+#from mmpretrain.registry import MODELS
 from timm.models.layers import to_2tuple
 from timm.models.vision_transformer import Block
 from typing import List

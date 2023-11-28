@@ -13,7 +13,7 @@ from .geospatial_pipelines import (
 
 from .datasets import MultiLabelGeospatialDataset
 #from .temporal_encoder_decoder import TemporalEncoderDecoder
-from .temporal_encoder_decoder import TemporalMultiLabelClassifier
+from .temporal_encoder_decoder import GeospatialMultiLabelClassifier
 
 __all__ = [
     "GeospatialDataset",
@@ -24,7 +24,7 @@ __all__ = [
     "LoadGeospatialImageFromFile",
     "TorchRandomCrop",
     #"TemporalEncoderDecoder",
-    "TemporalMultiLabelClassifier",
+    "GeospatialMultiLabelClassifier",
     "Reshape",
     "CastTensor",
     "CollectTestList",
