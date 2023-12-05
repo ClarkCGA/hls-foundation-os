@@ -102,11 +102,12 @@ img_norm_cfg = dict(
 # ]
 
 train_pipeline = [
-    dict(type='LoadGeospatialImageFromFile', to_float32=True, channels_last=True),
+    #dict(type='LoadGeospatialImageFromFile', to_float32=True, channels_last=True),
+    dict(type='LoadGeospatialImageFromFile', to_float32=True, channels_last=False),
     dict(type='BandsExtract', bands=bands),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='ToTensor', keys=['img']),
-    dict(type="TorchPermute", keys=["img"], order=(2, 0, 1)),
+    #dict(type="TorchPermute", keys=["img"], order=(2, 0, 1)),
     dict(type='TorchNormalize', **img_norm_cfg),
     dict(type='Reshape', keys=['img'], new_shape=(len(bands), num_frames, tile_size, tile_size)),
     dict(type='PackInputs'),
@@ -126,10 +127,11 @@ train_pipeline = [
 # ]
 
 test_pipeline = [
-    dict(type='LoadGeospatialImageFromFile', to_float32=True, channels_last=True),
+    #dict(type='LoadGeospatialImageFromFile', to_float32=True, channels_last=True),
+    dict(type='LoadGeospatialImageFromFile', to_float32=True, channels_last=False),
     dict(type='BandsExtract', bands=bands),
     dict(type='ToTensor', keys=['img']),
-    dict(type="TorchPermute", keys=["img"], order=(2, 0, 1)),
+    #dict(type="TorchPermute", keys=["img"], order=(2, 0, 1)),
     dict(type='TorchNormalize', **img_norm_cfg),
     dict(type='Reshape', keys=['img'], new_shape=(len(bands), num_frames, -1, -1), look_up = {'2': 1, '3': 2}),
     dict(type='PackInputs'),

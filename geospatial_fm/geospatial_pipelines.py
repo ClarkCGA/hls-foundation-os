@@ -265,7 +265,69 @@ class TorchPermute(object):
         return self.__class__.__name__ + f"(keys={self.keys}, order={self.order})"
 
 
-#@PIPELINES.register_module()
+# @PIPELINES.register_module()
+# class LoadGeospatialImageFromFile(object):
+#     """
+
+#     It loads a tiff image. Returns in channels last format, transposing if necessary according to channels_last argument.
+
+#     Args:
+#         to_float32 (bool): Whether to convert the loaded image to a float32
+#             numpy array. If set to False, the loaded image is an uint8 array.
+#             Defaults to False.
+#         nodata (float/int): no data value to substitute to nodata_replace
+#         nodata_replace (float/int): value to use to replace no data
+#         channels_last (bool): whether the file has channels last format.
+#             If False, will transpose to channels last format. Defaults to True.
+#     """
+
+#     def __init__(
+#         self, to_float32=False, nodata=None, nodata_replace=0.0, channels_last=True
+#     ):
+#         self.to_float32 = to_float32
+#         self.nodata = nodata
+#         self.nodata_replace = nodata_replace
+#         self.channels_last = channels_last
+
+#     def __call__(self, results):
+#         if results.get("img_prefix") is not None:
+#             filename = osp.join(results["img_prefix"], results["img_info"]["filename"])
+#         else:
+#             filename = results["img_info"]["filename"]
+#         img = open_tiff(filename)
+
+#         if not self.channels_last:
+#             img = np.transpose(img, (1, 2, 0))
+
+#         if self.to_float32:
+#             img = img.astype(np.float32)
+
+#         if self.nodata is not None:
+#             img = np.where(img == self.nodata, self.nodata_replace, img)
+
+#         results["filename"] = filename
+#         results["ori_filename"] = results["img_info"]["filename"]
+#         results["img"] = img
+#         results["img_shape"] = img.shape
+#         results["ori_shape"] = img.shape
+#         # Set initial values for default meta_keys
+#         results["pad_shape"] = img.shape
+#         results["scale_factor"] = 1.0
+#         results["flip"] = False
+#         num_channels = 1 if len(img.shape) < 3 else img.shape[2]
+#         results["img_norm_cfg"] = dict(
+#             mean=np.zeros(num_channels, dtype=np.float32),
+#             std=np.ones(num_channels, dtype=np.float32),
+#             to_rgb=False,
+#         )
+#         return results
+
+#     def __repr__(self):
+#         repr_str = self.__class__.__name__
+#         repr_str += f"(to_float32={self.to_float32}"
+#         return repr_str
+
+
 @TRANSFORMS.register_module()
 class LoadGeospatialImageFromFile(object):
     """
@@ -292,9 +354,9 @@ class LoadGeospatialImageFromFile(object):
 
     def __call__(self, results):
         if results.get("img_prefix") is not None:
-            filename = osp.join(results["img_prefix"], results["img_info"]["filename"])
+            filename = osp.join(results["img_prefix"], results["img_path"])
         else:
-            filename = results["img_info"]["filename"]
+            filename = results["img_path"]
         img = open_tiff(filename)
 
         if not self.channels_last:
@@ -307,7 +369,7 @@ class LoadGeospatialImageFromFile(object):
             img = np.where(img == self.nodata, self.nodata_replace, img)
 
         results["filename"] = filename
-        results["ori_filename"] = results["img_info"]["filename"]
+        results["ori_filename"] = results["img_path"]
         results["img"] = img
         results["img_shape"] = img.shape
         results["ori_shape"] = img.shape
