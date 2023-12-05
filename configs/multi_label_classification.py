@@ -132,10 +132,7 @@ test_pipeline = [
     dict(type="TorchPermute", keys=["img"], order=(2, 0, 1)),
     dict(type='TorchNormalize', **img_norm_cfg),
     dict(type='Reshape', keys=['img'], new_shape=(len(bands), num_frames, -1, -1), look_up = {'2': 1, '3': 2}),
-    dict(type='CastTensor', keys=['img'], new_type="torch.FloatTensor"),
-    dict(type='CollectTestList', keys=['img'],
-         meta_keys=['img_info', 'seg_fields', 'img_prefix', 'seg_prefix', 'filename', 'ori_filename', 'img',
-                    'img_shape', 'ori_shape', 'pad_shape', 'scale_factor', 'img_norm_cfg']),
+    dict(type='PackInputs'),
     ]
 
 # CLASSES = ('Natural Vegetation', 
