@@ -27,7 +27,8 @@
 
 
 import os
-from mmpretrain.registry import DATASETS
+#from mmpretrain.registry import DATASETS
+from mmengine.registry import DATASETS
 from mmpretrain.datasets.base_dataset import BaseDataset
 from typing import Optional, Any
 

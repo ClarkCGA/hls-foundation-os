@@ -10,8 +10,12 @@ from tifffile import imread
 #from mmcv.parallel import DataContainer as DC
 #from mmseg.datasets.builder import PIPELINES
 #from mmcv.transforms import BaseTransform
-from mmpretrain.registry import TRANSFORMS
 
+#from mmpretrain.registry import TRANSFORMS
+from mmengine.registry import TRANSFORMS
+
+from mmpretrain.datasets.transforms.formatting import PackInputs
+TRANSFORMS.register_module()(PackInputs)
 
 def open_tiff(fname):
     data = imread(fname)

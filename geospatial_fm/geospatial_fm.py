@@ -23,25 +23,25 @@ from timm.models.vision_transformer import Block
 from typing import List
 
 
-def _convTranspose2dOutput(
-    input_size: int,
-    stride: int,
-    padding: int,
-    dilation: int,
-    kernel_size: int,
-    output_padding: int,
-):
-    """
-    Calculate the output size of a ConvTranspose2d.
-    Taken from: https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html
-    """
-    return (
-        (input_size - 1) * stride
-        - 2 * padding
-        + dilation * (kernel_size - 1)
-        + output_padding
-        + 1
-    )
+# def _convTranspose2dOutput(
+#     input_size: int,
+#     stride: int,
+#     padding: int,
+#     dilation: int,
+#     kernel_size: int,
+#     output_padding: int,
+# ):
+#     """
+#     Calculate the output size of a ConvTranspose2d.
+#     Taken from: https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html
+#     """
+#     return (
+#         (input_size - 1) * stride
+#         - 2 * padding
+#         + dilation * (kernel_size - 1)
+#         + output_padding
+#         + 1
+#     )
 
 
 def get_1d_sincos_pos_embed_from_grid(embed_dim: int, pos: torch.Tensor):
