@@ -19,11 +19,17 @@ We use a simple architecture that adds a neck and segmentation head to the backb
 
 ### The pipeline
 Additionally, we provide extra components for data loading pipelines in [geospatial_pipelines.py](./geospatial_fm/geospatial_pipelines.py). These are documented in the file.
-We observe the MMCV convention that all operations assumes a channel-last format. Our tiff loader also assumes this is the format in which files are written, and offers a flag to automatically transpose a to channel-last format if this is not the case.
+
+We observe the MMCV convention that all operations assume a channel-last format. 
 *However*, we also introduce some components with the prefix `Torch`, such as `TorchNormalize`. These components assume the torch convention of channel-first.
 
 At some point during the pipeline, before feeding the data to the model, it is necessary to change to channel-first format.
 We reccomend implementing the change after the `ToTensor` operation (which is also necessary at some point), using the `TorchPermute` operation.
+
+### Tutorial
+Check out the [exploration notebook](./exploration.ipynb) for a more in depth example of the usage of the model.
+
+
 ## Setup
 ### Dependencies
 1. Clone this repository
@@ -53,11 +59,11 @@ The [NASA HLS multi-temporal crop classification dataset](https://huggingface.co
 2. 
     a. With the conda env created above activated, run:
     
-    `mim train mmsegmentation --launcher pytorch configs/sen1floods11_config.py` or 
+    `mim train mmsegmentation configs/sen1floods11_config.py` or 
     
-    `mim train mmsegmentation --launcher pytorch configs/burn_scars.py` or
+    `mim train mmsegmentation configs/burn_scars.py` or
     
-    `mim train mmsegmentation --launcher pytorch configs/multi_temporal_crop_classification.py`
+    `mim train mmsegmentation configs/multi_temporal_crop_classification.py`
     
     b. To run testing: 
     
@@ -74,7 +80,7 @@ We also provide checkpoints on Hugging Face for the [burn scars detection](https
 We provide a script to run inference on new data in GeoTIFF format. The data can be of any shape (e.g. height and width) as long as it follows the bands/channels of the original dataset. An example is shown below.
 
 ```
-python model_inference.py -config /path/to/config/config.py -ckpt /path/to/checkpoint/checkpoint.pth -input /input/folder/ -output /output/folder/ -input_type tif -bands "[0,1,2,3,4,5]"
+python model_inference.py -config /path/to/config/config.py -ckpt /path/to/checkpoint/checkpoint.pth -input /input/folder/ -output /output/folder/ -input_type tif -bands 0 1 2 3 4 5
 ```
 
 The `bands` parameter is useful in case the files used to run inference have the data in different orders/indexes than the original dataset.
